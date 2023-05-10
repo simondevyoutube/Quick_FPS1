@@ -1,0 +1,11 @@
+Model Information:
+* title:	Robot from the series "Love death and robots"
+* source:	https://sketchfab.com/3d-models/robot-from-the-series-love-death-and-robots-3c2c43c8737341e5816c61634782373a
+* author:	GreenG (https://sketchfab.com/AngelNebesniy)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Robot from the series "Love death and robots"" (https://sketchfab.com/3d-models/robot-from-the-series-love-death-and-robots-3c2c43c8737341e5816c61634782373a) by GreenG (https://sketchfab.com/AngelNebesniy) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

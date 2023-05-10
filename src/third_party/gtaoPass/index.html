@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>threejs webgl - postprocessing - ground truth ambient occlusion</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #000000;
+				margin: 0px;
+				padding: 0;
+				overflow: hidden;
+				font-family: Monospace;
+				font-size: 13px;
+				text-align: center;
+				color: #fff;
+			}
+
+			a {
+				color:#80CBC4;
+			}
+
+			#info {
+				position: absolute;
+				padding-top: 10px;
+				width: 100%;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="info">
+			<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - Ground Truth Ambient Occlusion by <a href="http://gkjohnson.github.io" target="_blank" rel="noopener">Garrett Johnson</a>
+
+			<br/>
+
+			Based on implementation from Asylum_Tutorials <a href="https://github.com/asylum2010/Asylum_Tutorials/tree/master/ShaderTutors/54_GTAO">here</a>.
+
+			<br/>
+
+			Sponza castle model from <a href="https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/Sponza/glTF">GLTF 2.0 samples</a>
+		</div>
+
+		<script type="module">
+
+			import * as THREE from '//cdn.skypack.dev/three@0.130.1/build/three.module.js';
+			import { OrbitControls } from '//cdn.skypack.dev/three@0.130.1/examples/jsm/controls/OrbitControls.js';
+			import { FXAAShader } from '//cdn.skypack.dev/three@0.130.1/examples/jsm/shaders/FXAAShader.js';
+			import { GammaCorrectionShader } from '//cdn.skypack.dev/three@0.130.1/examples/jsm/shaders/GammaCorrectionShader.js';
+			import { EffectComposer } from '//cdn.skypack.dev/three@0.130.1/examples/jsm/postprocessing/EffectComposer.js';
+			import { RenderPass } from '//cdn.skypack.dev/three@0.130.1/examples/jsm/postprocessing/RenderPass.js';
+			import { ShaderPass } from '//cdn.skypack.dev/three@0.130.1/examples/jsm/postprocessing/ShaderPass.js';
+			import { GLTFLoader } from '//cdn.skypack.dev/three@0.130.1/examples/jsm/loaders/GLTFLoader.js';
+
+			import Stats from '//cdn.skypack.dev/three@0.130.1/examples/jsm/libs/stats.module.js';
+			import dat from '//cdn.skypack.dev/dat.gui/build/dat.gui.module.js';
+
+			import { GTAOPass } from './src/GTAOPass.js';
+
+			// globals
+			var stats;
+			var params = {
+				enabled: true,
+				rotationJitter: 1,
+				radiusJitter: 0,
+
+				directionOffset: 0.0,
+				stepOffset: 0.0,
+				numSteps: 8,
+				numDirections: 1,
+				intensity: 1.0,
+				radius: 2.0,
+
+				enableFalloff: true,
+				falloffStart: 0.4,
+				falloffEnd: 2.0,
+
+				blurMode: GTAOPass.BOX_BLUR,
+				blurIterations: 5,
+				blurStride: 1,
+
+				display: GTAOPass.DEFAULT,
+				renderTargetScale: 0.5,
+				scene: 'pyramid',
+
+				ambientLightColor: [ 255, 255, 255 ],
+				ambientLightIntensity: 0,
+
+				enableLightBounce: false,
+				lightBounceIntensity: 1.0,
+			};
+			var camera, scene, renderer, controls;
+			var composer;
+			var sphere;
+			var fxaaPass, gtaoPass, gammaPass, motionPass, renderPass;
+			var scenes, ambientLight;
+
+			init();
+			animate();
+
+			function createSponza() {
+
+				// sponza scene
+				var sponzaGroup = new THREE.Group();
+				var loader = new GLTFLoader();
+				loader.load(
+					'https://rawgit.com/KhronosGroup/glTF-Sample-Models/master/2.0/Sponza/glTF/Sponza.gltf',
+					g => {
+						const o = g.scene.children[0];
+						o.position.y = - 2 / 3;
+						o.rotation.set(0, Math.PI / 2, 0);
+
+						o.traverse(c => {
+							c.castShadow = true;
+							c.receiveShadow = true;
+						});
+						sponzaGroup.add(o);
+					}
+				);
+
+				const directionalLight = new THREE.DirectionalLight( 0xffffff, 4 );
+				directionalLight.position.set( 35, 200, 100 );
+				directionalLight.castShadow = true;
+
+				const shadowCam = directionalLight.shadow.camera;
+				shadowCam.left = shadowCam.bottom = -15;
+				shadowCam.right = shadowCam.top = 15;
+				directionalLight.shadow.mapSize.width = 2048;
+				directionalLight.shadow.mapSize.height = 2048;
+				sponzaGroup.add( directionalLight );
+
+				return sponzaGroup;
+
+			}
+
+			function createBallPyramid() {
+
+				var group = new THREE.Group();
+				var plane = new THREE.Mesh(
+					new THREE.BoxBufferGeometry(),
+					new THREE.MeshStandardMaterial( { color: 0x191919, roughness: 0.8 } )
+				);
+				plane.receiveShadow = true;
+				plane.rotation.set( -Math.PI / 2, 0, 0 );
+				plane.scale.set( 2000, 2000, 0.1 );
+				plane.position.y = -1;
+				group.add( plane );
+
+				const total = 3;
+				for ( let i = 0; i <= total; i ++ ) {
+
+					const count = total - i;
+					for ( let x = 0; x <= count; x ++ ) {
+
+						for ( let y = 0; y <= count; y ++ ) {
+
+							const sphere = new THREE.Mesh(
+								new THREE.SphereBufferGeometry( 1, 30, 30 ),
+								new THREE.MeshStandardMaterial( { color: 0x191919, roughness: 0.8 } )
+							);
+
+							const offsetx = 2 * x - count;
+							const offsety = 2 * y - count;
+							sphere.position.set( offsetx, i * 1.4, offsety );
+							group.add( sphere );
+
+						}
+
+					}
+
+				}
+
+				group.scale.setScalar( 1 / 10 );
+
+				const directionalLight = new THREE.DirectionalLight( 0xffffff, 4 );
+				directionalLight.position.set( 35, 200, 100 );
+				directionalLight.castShadow = true;
+
+				const shadowCam = directionalLight.shadow.camera;
+				shadowCam.left = shadowCam.bottom = -15;
+				shadowCam.right = shadowCam.top = 15;
+				directionalLight.shadow.mapSize.width = 2048;
+				directionalLight.shadow.mapSize.height = 2048;
+				group.add( directionalLight );
+
+				return group;
+
+			}
+
+			function createKnotScene() {
+
+				const group = new THREE.Group();
+
+				const ground = new THREE.Mesh(
+					new THREE.BoxBufferGeometry(),
+					new THREE.MeshStandardMaterial( { color: 0x444444, roughness: 0.8 } )
+				);
+				ground.receiveShadow = true;
+				ground.scale.set( 50, 0.1, 50 );
+				ground.position.y = - 1;
+				group.add( ground );
+
+				const wall = new THREE.Mesh(
+					new THREE.BoxBufferGeometry(),
+					new THREE.MeshStandardMaterial( { color: 0xff8700, roughness: 0.8 } )
+				);
+				wall.receiveShadow = true;
+				wall.castShadow = true;
+				wall.scale.set( 0.1, 3, 3 );
+				wall.position.x = -1.25
+				group.add( wall );
+
+				const knot = new THREE.Mesh(
+					new THREE.TorusKnotBufferGeometry( 1, 0.35, 200, 32, 2, 5 ),
+					new THREE.MeshStandardMaterial( { color: 0xcf031f, roughness: 1 } )
+				);
+				knot.position.y = 0.1;
+				knot.castShadow = true;
+				knot.scale.setScalar( 0.5 );
+				knot.receiveShadow = true;
+				group.add( knot );
+
+				const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+				directionalLight.position.set( 3, 2, 1 );
+				directionalLight.castShadow = true;
+
+				const shadowCam = directionalLight.shadow.camera;
+				shadowCam.left = shadowCam.bottom = -3;
+				shadowCam.right = shadowCam.top = 3;
+				directionalLight.shadow.mapSize.width = 2048;
+				directionalLight.shadow.mapSize.height = 2048;
+				group.add( directionalLight );
+
+				const sphere = new THREE.Mesh(
+					new THREE.SphereBufferGeometry()
+				);
+				directionalLight.add( sphere );
+
+				group.update = function() {
+
+					const t = ( Math.sin( window.performance.now() * 0.001 ) + 1.0 ) / 2.0;
+					const angle = THREE.MathUtils.lerp( - Math.PI / 10.0, Math.PI / 2.0, t );
+
+					directionalLight.position.set( 10.0, 0.0, 0.0 );
+					directionalLight.position.applyAxisAngle( new THREE.Vector3( 0, 0, 1 ), angle );
+
+				};
+
+				return group;
+
+			}
+
+			function init() {
+
+				// initialize renderer, scene, camera
+				camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, .1, 100 );
+				camera.position.set( 0.0, 1, 1 * 3.5 );
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0x13191c ).convertSRGBToLinear();
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.shadowMap.enabled = true;
+				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+				document.body.appendChild( renderer.domElement );
+
+				// geometry
+				const standardMaterial = new THREE.MeshStandardMaterial( {
+					map: null,
+					color: 0xffffff,
+					metalness: 0.5,
+				} );
+
+
+				// Lights
+				ambientLight = new THREE.AmbientLight( 0xffffff, 0.1 );
+				scene.add( ambientLight );
+
+				const sponzaGroup = createSponza();
+				scene.add( sponzaGroup );
+
+				var pyramidScene = createBallPyramid();
+				scene.add( pyramidScene );
+
+				const knotScene = createKnotScene();
+				scene.add( knotScene );
+
+				scenes = {
+					sponza: sponzaGroup,
+					pyramid: pyramidScene,
+					knot: knotScene,
+				};
+
+				// Render Pass Setup
+				renderPass = new RenderPass( scene, camera );
+
+				gammaPass = new ShaderPass( GammaCorrectionShader );
+
+				fxaaPass = new ShaderPass( FXAAShader );
+				fxaaPass.uniforms[ 'resolution' ].value.set( 1 / window.innerWidth, 1 / window.innerHeight );
+
+				gtaoPass = new GTAOPass( scene, camera );
+				window.gtaoPass = gtaoPass;
+
+				const floatRT = new THREE.WebGLRenderTarget( 1, 1, {
+					minFilter: THREE.LinearFilter,
+					magFilter: THREE.LinearFilter,
+					format: THREE.RGBAFormat,
+					type: THREE.HalfFloatType,
+				} );
+				composer = new EffectComposer( renderer, floatRT );
+				composer.setSize( window.innerWidth, window.innerHeight );
+				composer.setPixelRatio( window.devicePixelRatio );
+				composer.addPass( renderPass );
+				composer.addPass( gtaoPass );
+				composer.addPass( gammaPass );
+				composer.addPass( fxaaPass );
+
+				// stats
+				stats = new Stats();
+				document.body.appendChild( stats.dom );
+
+				// camera controls
+				controls = new OrbitControls( camera, renderer.domElement );
+				controls.minDistance = .1;
+				controls.maxDistance = 200;
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+				// dat gui
+				var gui = new dat.GUI();
+				gui.width = 300;
+
+				gui.add( params, 'enabled' );
+				gui.add( params, 'scene', Object.keys( scenes ) );
+
+				const settingsFolder = gui.addFolder( 'settings' );
+				settingsFolder.add( params, 'directionOffset' ).min( 0.0 ).max( 1 ).step( 0.01 );
+				settingsFolder.add( params, 'stepOffset' ).min( 0.0 ).max( 1 ).step( 0.01 );
+				settingsFolder.add( params, 'rotationJitter', {
+					NONE: 0,
+					RANDOM: 1,
+					BLUE_NOISE: 2,
+				} );
+				settingsFolder.add( params, 'radiusJitter', {
+					NONE: 0,
+					RANDOM: 1,
+					BLUE_NOISE: 2,
+				} );
+				settingsFolder.add( params, 'numSteps' ).min( 1 ).max( 32 ).step( 1 );
+				settingsFolder.add( params, 'numDirections' ).min( 1 ).max( 32 ).step( 1 );
+				settingsFolder.add( params, 'intensity' ).min( 0 ).max( 2.0 ).step( 0.01 );
+				settingsFolder.add( params, 'radius' ).min( 0 ).max( 10.0 ).step( 0.01 );
+
+				settingsFolder.add( params, 'enableFalloff' );
+				settingsFolder.add( params, 'falloffStart' ).min( 0 ).max( 10.0 ).step( 0.01 );
+				settingsFolder.add( params, 'falloffEnd' ).min( 0 ).max( 10.0 ).step( 0.01 );
+
+				settingsFolder.add( params, 'renderTargetScale' ).min( 0.1 ).max( 1.0 ).step( 0.01 ).onChange( v => {
+
+					gtaoPass.renderTargetScale = v;
+					onWindowResize();
+
+				} );
+				settingsFolder.open();
+
+				const blurFolder = gui.addFolder( 'blur' );
+				blurFolder.add( params, 'blurMode', {
+					NO_BLUR: GTAOPass.NO_BLUR,
+					BOX_BLUR: GTAOPass.BOX_BLUR,
+					CROSS_BLUR: GTAOPass.CROSS_BLUR,
+					DIAGONAL_BLUR: GTAOPass.DIAGONAL_BLUR,
+				} );
+				blurFolder.add( params, 'blurIterations' ).min( 1 ).max( 20 ).step( 1 );
+				blurFolder.add( params, 'blurStride' ).min( 1 ).max( 5 ).step( 1 );
+				blurFolder.open();
+
+				const ambientLightFolder = gui.addFolder( 'ambient light' );
+				ambientLightFolder.addColor( params, 'ambientLightColor' ).name( 'color' );
+				ambientLightFolder.add( params, 'ambientLightIntensity' ).name( 'intensity' ).min( 0 ).max( 1 ).step( 0.1 );
+				// ambientLightFolder.open();
+
+				const lightBounceFolder = gui.addFolder( 'illumination' );
+				lightBounceFolder.add( params, 'enableLightBounce' );
+				lightBounceFolder.add( params, 'lightBounceIntensity' ).min( 0.0 ).max( 5.0 ).step( 0.01 );
+				lightBounceFolder.open();
+
+				const debugFolder = gui.addFolder( 'debug' );
+				debugFolder.add( params, 'display', {
+					DEFAULT: GTAOPass.DEFAULT,
+					DEPTH: GTAOPass.DEPTH,
+					NORMAL: GTAOPass.NORMAL,
+					AO_SAMPLE: GTAOPass.AO_SAMPLE,
+					COLOR_SAMPLE: GTAOPass.COLOR_SAMPLE,
+				} );
+				debugFolder.open();
+
+				gui.open();
+
+				gtaoPass.renderTargetScale = params.renderTargetScale;
+				onWindowResize();
+
+			}
+
+			function onWindowResize() {
+
+				var width = window.innerWidth;
+				var height = window.innerHeight;
+
+				camera.aspect = width / height;
+				camera.updateProjectionMatrix();
+
+				const pixelRatio = window.devicePixelRatio;
+				renderer.setSize( width, height );
+				renderer.setPixelRatio( pixelRatio );
+
+				composer.setSize( width, height );
+				composer.setPixelRatio( pixelRatio );
+
+				fxaaPass.uniforms[ 'resolution' ].value.set( 1 / ( pixelRatio * width ), 1 / ( pixelRatio * height ) );
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				stats.begin();
+				render();
+				stats.end();
+
+			}
+
+			function render() {
+
+				for ( const key in scenes ) {
+
+					scenes[ key ].visible = key === params.scene;
+
+				}
+
+				const scene = scenes[ params.scene ];
+				if ( scene.update ) scene.update();
+
+				gtaoPass.debug.display = parseInt( params.display );
+				gtaoPass.enabled = params.enabled;
+				gtaoPass.singlePass = params.singlePass;
+				gtaoPass.rotationJitter = parseInt( params.rotationJitter );
+				gtaoPass.radiusJitter = parseInt( params.radiusJitter );
+				gtaoPass.blurMode = parseFloat( params.blurMode );
+				gtaoPass.blurIterations = params.blurIterations;
+				gtaoPass.blurStride = params.blurStride;
+				gtaoPass.numSteps = params.numSteps;
+				gtaoPass.numDirections = params.numDirections;
+				gtaoPass.intensity = params.intensity;
+				gtaoPass.radius = params.radius;
+				gtaoPass.falloffStart = params.falloffStart;
+				gtaoPass.falloffEnd = params.falloffEnd;
+				gtaoPass.enableFalloff = params.enableFalloff;
+				gtaoPass.directionOffset = params.directionOffset;
+				gtaoPass.stepOffset = params.stepOffset;
+
+				gtaoPass.lightBounceIntensity = params.enableLightBounce ? params.lightBounceIntensity : 0.0;
+
+				// ambientLight.color.setRGB( ...params.ambientLightColor.map( c => c / 255 ) );
+				// ambientLight.intensity = params.ambientLightIntensity;
+
+				gtaoPass.ambientColor.setRGB( ...params.ambientLightColor.map( c => c / 255 ) );
+				gtaoPass.ambientIntensity = params.ambientLightIntensity;
+
+				gammaPass.enabled = gtaoPass.debug.display === GTAOPass.DEFAULT;
+
+				composer.render();
+
+			}
+
+		</script>
+
+	</body>
+
+</html>

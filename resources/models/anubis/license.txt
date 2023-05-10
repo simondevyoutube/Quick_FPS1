@@ -1,0 +1,11 @@
+Model Information:
+* title:	Anubis Bust
+* source:	https://sketchfab.com/3d-models/anubis-bust-636c098547e24805a796cca1773aa9bb
+* author:	lucasthx88 (https://sketchfab.com/lucasthx88)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Anubis Bust" (https://sketchfab.com/3d-models/anubis-bust-636c098547e24805a796cca1773aa9bb) by lucasthx88 (https://sketchfab.com/lucasthx88) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
