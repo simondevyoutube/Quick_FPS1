@@ -20,6 +20,12 @@ import {attack_controller} from './attack-controller.js';
 export const spawners = (() => {
 
   class PlayerSpawner extends entity.Component {
+    static CLASS_NAME = 'PlayerSpawner';
+
+    get NAME() {
+      return PlayerSpawner.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.params_ = params;
@@ -42,6 +48,12 @@ export const spawners = (() => {
   };
 
   class Level1Spawner extends entity.Component {
+    static CLASS_NAME = 'Level1Spawner';
+
+    get NAME() {
+      return Level1Spawner.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.params_ = params;
@@ -59,6 +71,12 @@ export const spawners = (() => {
   };
 
   class TargetSpawner extends entity.Component {
+    static CLASS_NAME = 'TargetSpawner';
+
+    get NAME() {
+      return TargetSpawner.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.params_ = params;
@@ -69,7 +87,7 @@ export const spawners = (() => {
       e.AddComponent(new target_entity.TargetCharacterController({
         scene: this.params_.scene,
         model: {
-          path: './resources/quaternius/Enemies/',
+          path: 'resources/quaternius/Enemies/',
           name: 'Enemy_Large_Gun.glb',
           scale: 2,
         },

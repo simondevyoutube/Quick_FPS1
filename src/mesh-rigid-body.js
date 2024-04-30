@@ -6,6 +6,12 @@ import {entity} from './entity.js';
 export const mesh_rigid_body = (() => {
 
   class MeshRigidBody extends entity.Component {
+    static CLASS_NAME = 'MeshRigidBody';
+
+    get NAME() {
+      return MeshRigidBody.CLASS_NAME;
+    }
+    
     constructor(params) {
       super();
       this.group_ = new THREE.Group();

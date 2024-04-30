@@ -31,6 +31,12 @@ void main() {
 `;
 
   class BlasterSystem extends entity.Component {
+    static CLASS_NAME = 'BlasterSystem';
+
+    get NAME() {
+      return BlasterSystem.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.params_ = params;

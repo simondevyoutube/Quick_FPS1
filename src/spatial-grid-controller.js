@@ -4,6 +4,12 @@ import {entity} from './entity.js';
 export const spatial_grid_controller = (() => {
 
   class SpatialGridController extends entity.Component {
+    static CLASS_NAME = 'SpatialGridController';
+
+    get NAME() {
+      return SpatialGridController.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
 

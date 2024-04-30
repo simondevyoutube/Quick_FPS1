@@ -7,6 +7,12 @@ import {math} from './math.js';
 export const attack_controller = (() => {
 
   class AttackController extends entity.Component {
+    static CLASS_NAME = 'AttackController';
+
+    get NAME() {
+      return AttackController.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.params_ = params;

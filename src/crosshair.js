@@ -5,6 +5,12 @@ import {entity} from './entity.js';
 export const crosshair = (() => {
 
   class Crosshair extends entity.Component {
+    static CLASS_NAME = 'Crosshair';
+
+    get NAME() {
+      return Crosshair.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.params_ = params;

@@ -309,6 +309,12 @@ vec2 voronoiBorder(vec3 uv){
   }`;
 
   class ShieldComponent extends entity.Component {
+    static CLASS_NAME = 'ShieldComponent';
+
+    get NAME() {
+      return ShieldComponent.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.params_ = params;

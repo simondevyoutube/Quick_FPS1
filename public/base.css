@@ -193,7 +193,7 @@ body {
 }
 
 .weapon-icon {
-  background-image: url('./resources/ui/paintball.png');
+  background-image: url('resources/ui/paintball.png');
   background-repeat: no-repeat;
   background-size: contain;
   width: 110px;
@@ -230,7 +230,7 @@ body {
 }
 
 .weapon-text-icon {
-  background-image: url('./resources/ui/currency_yuan_FILL0_wght700_GRAD0_opsz48.svg');
+  background-image: url('resources/ui/currency_yuan_FILL0_wght700_GRAD0_opsz48.svg');
   background-repeat: no-repeat;
   background-size: cover;
   height: 24px;
@@ -240,7 +240,7 @@ body {
 }
 
 .weapon-pic-icon {
-  background-image: url('./resources/ui/safety_check_FILL0_wght700_GRAD0_opsz48.svg');
+  background-image: url('resources/ui/safety_check_FILL0_wght700_GRAD0_opsz48.svg');
   background-size: contain;
   height: 40px;
   width: 40px;
@@ -258,7 +258,7 @@ body {
 }
 
 .charge-icon {
-  background-image: url('./resources/ui/flash_on_FILL0_wght700_GRAD0_opsz48.svg');
+  background-image: url('resources/ui/flash_on_FILL0_wght700_GRAD0_opsz48.svg');
   background-size: contain;
   height: 24px;
   width: 24px;
@@ -290,7 +290,7 @@ body {
 }
 
 .health-icon {
-  background-image: url('./resources/ui/add_box_FILL0_wght700_GRAD0_opsz48.svg');
+  background-image: url('resources/ui/add_box_FILL0_wght700_GRAD0_opsz48.svg');
   background-size: contain;
   height: 48px;
   width: 48px;

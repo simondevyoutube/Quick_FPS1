@@ -13,6 +13,12 @@ export const first_person_camera = (() => {
   const POWER_RECHARGE = 10;
 
   class FirstPersonCamera extends entity.Component {
+    static CLASS_NAME = 'FirstPersonCamera';
+
+    get NAME() {
+      return FirstPersonCamera.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
 

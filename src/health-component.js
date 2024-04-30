@@ -4,6 +4,12 @@ import {entity} from "./entity.js";
 export const health_component = (() => {
 
   class HealthComponent extends entity.Component {
+    static CLASS_NAME = 'HealthComponent';
+
+    get NAME() {
+      return HealthComponent.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.stats_ = {...params};

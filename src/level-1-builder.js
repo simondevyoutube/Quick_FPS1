@@ -11,6 +11,12 @@ import {mesh_rigid_body} from './mesh-rigid-body.js';
 export const level_1_builder = (() => {
 
   class Level1Builder extends entity.Component {
+    static CLASS_NAME = 'Level1Builder';
+
+    get NAME() {
+      return Level1Builder.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
 
@@ -21,23 +27,23 @@ export const level_1_builder = (() => {
 
     LoadMaterial_(albedoName, normalName, roughnessName, metalnessName) {
       const textureLoader = new THREE.TextureLoader();
-      const albedo = textureLoader.load('./resources/textures/' + albedoName);
+      const albedo = textureLoader.load('resources/textures/' + albedoName);
       albedo.anisotropy = this.FindEntity('threejs').GetComponent('ThreeJSController').getMaxAnisotropy();
       albedo.wrapS = THREE.RepeatWrapping;
       albedo.wrapT = THREE.RepeatWrapping;
       albedo.encoding = THREE.sRGBEncoding;
 
-      const metalness = textureLoader.load('./resources/textures/' + metalnessName);
+      const metalness = textureLoader.load('resources/textures/' + metalnessName);
       metalness.anisotropy = this.FindEntity('threejs').GetComponent('ThreeJSController').getMaxAnisotropy();
       metalness.wrapS = THREE.RepeatWrapping;
       metalness.wrapT = THREE.RepeatWrapping;
 
-      const normal = textureLoader.load('./resources/textures/' + normalName);
+      const normal = textureLoader.load('resources/textures/' + normalName);
       normal.anisotropy = this.FindEntity('threejs').GetComponent('ThreeJSController').getMaxAnisotropy();
       normal.wrapS = THREE.RepeatWrapping;
       normal.wrapT = THREE.RepeatWrapping;
 
-      const roughness = textureLoader.load('./resources/textures/' + roughnessName);
+      const roughness = textureLoader.load('resources/textures/' + roughnessName);
       roughness.anisotropy = this.FindEntity('threejs').GetComponent('ThreeJSController').getMaxAnisotropy();
       roughness.wrapS = THREE.RepeatWrapping;
       roughness.wrapT = THREE.RepeatWrapping;
@@ -305,7 +311,7 @@ vec3 pal( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )
         const e = new entity.Entity();
         e.AddComponent(new render_component.RenderComponent({
           scene: this.params_.scene,
-          resourcePath: './resources/models/' + models[i][0] + '/',
+          resourcePath: 'resources/models/' + models[i][0] + '/',
           resourceName: 'scene.glb',
           scale: new THREE.Vector3(models[i][1], models[i][1], models[i][1]),
           emissive: new THREE.Color(0x000000),

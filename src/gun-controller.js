@@ -19,6 +19,12 @@ export const gun_controller = (() => {
   }
 
   class GunController extends entity.Component {
+    static CLASS_NAME = 'GunController';
+
+    get NAME() {
+      return GunController.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
 
@@ -71,7 +77,7 @@ export const gun_controller = (() => {
     InitEntity() {
       const threejs = this.FindEntity('threejs').GetComponent('ThreeJSController');
       const textureLoader = new THREE.TextureLoader();
-      const whitesquare = textureLoader.load('./resources/textures/whitesquare.png');
+      const whitesquare = textureLoader.load('resources/textures/whitesquare.png');
       whitesquare.anisotropy = threejs.getMaxAnisotropy();
       whitesquare.wrapS = THREE.RepeatWrapping;
       whitesquare.wrapT = THREE.RepeatWrapping;
@@ -102,7 +108,7 @@ export const gun_controller = (() => {
       e.AddComponent(new render_component.RenderComponent({
         scene: this.Parent.Attributes.FPSCamera.group,
         // scene: poopgroup,
-        resourcePath: './resources/rifle/',
+        resourcePath: 'resources/rifle/',
         resourceName: 'scene.gltf',
         scale: new THREE.Vector3(1, 1, 1),
         emissive: new THREE.Color(0x000000),
@@ -166,7 +172,7 @@ export const gun_controller = (() => {
 
       //       const decalMaterial = new THREE.MeshStandardMaterial( {
       //         color: 0xFFFFFF,
-      //         map: textureLoader.load('./resources/footprint' + footIndex + '.png'),
+      //         map: textureLoader.load('resources/footprint' + footIndex + '.png'),
       //         transparent: true,
       //         depthTest: true,
       //         depthWrite: false,
@@ -345,8 +351,8 @@ export const gun_controller = (() => {
   
                 const decalMaterial = new THREE.MeshStandardMaterial( {
                   color: 0xFFFFFF,
-                  // map: textureLoader.load('./resources/textures/bullet-albedo.png'),
-                  // normalMap: textureLoader.load('./resources/textures/bullet2-normal.jpg'),
+                  // map: textureLoader.load('resources/textures/bullet-albedo.png'),
+                  // normalMap: textureLoader.load('resources/textures/bullet2-normal.jpg'),
                   // normalScale: new THREE.Vector2(1, -1),
                   transparent: true,
                   depthTest: true,

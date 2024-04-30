@@ -52,7 +52,7 @@ class QuickFPS1 {
     fx.AddComponent(new blaster.BlasterSystem({
         scene: this.scene_,
         camera: this.camera_,
-        texture: './resources/textures/fx/tracer.png',
+        texture: 'resources/textures/fx/tracer.png',
     }));
     this.entityManager_.Add(fx, 'fx');
 

@@ -75,7 +75,7 @@ export const entity = (() => {
 
     AddComponent(c) {
       c.SetParent(this);
-      this.components_[c.constructor.name] = c;
+      this.components_[c.NAME] = c;
 
       c.InitComponent();
     }
@@ -160,6 +160,11 @@ export const entity = (() => {
   };
 
   class Component {
+    get NAME() {
+      console.error('Unnamed Component: ' + this.constructor.name);
+      return '__UNNAMED__';
+    }
+  
     constructor() {
       this.parent_ = null;
       this.pass_ = 0;

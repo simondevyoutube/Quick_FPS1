@@ -35,6 +35,12 @@ export const target_entity = (() => {
   };
 
   class TargetCharacterController extends entity.Component {
+    static CLASS_NAME = 'TargetCharacterController';
+
+    get NAME() {
+      return TargetCharacterController.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.params_ = params;

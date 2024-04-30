@@ -15,6 +15,12 @@ export const player_input = (() => {
   };
 
   class PlayerInput extends entity.Component {
+    static CLASS_NAME = 'PlayerInput';
+
+    get NAME() {
+      return PlayerInput.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.params_ = params;

@@ -6,6 +6,12 @@ import {entity} from './entity.js';
 export const render_component = (() => {
 
   class RenderComponent extends entity.Component {
+    static CLASS_NAME = 'RenderComponent';
+
+    get NAME() {
+      return RenderComponent.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.group_ = new THREE.Group();

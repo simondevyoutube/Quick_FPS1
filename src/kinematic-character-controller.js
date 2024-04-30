@@ -7,6 +7,12 @@ import {entity} from './entity.js';
 export const kinematic_character_controller = (() => {
 
   class KinematicCharacterController extends entity.Component {
+    static CLASS_NAME = 'KinematicCharacterController';
+
+    get NAME() {
+      return KinematicCharacterController.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.params_ = params;

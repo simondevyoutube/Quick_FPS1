@@ -6,6 +6,12 @@ import {entity} from "./entity.js";
 export const load_controller = (() => {
 
   class LoadController extends entity.Component {
+    static CLASS_NAME = 'LoadController';
+
+    get NAME() {
+      return LoadController.CLASS_NAME;
+    }
+
     constructor() {
       super();
 

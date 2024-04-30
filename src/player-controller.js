@@ -7,6 +7,12 @@ import {math} from './math.js';
 export const player_controller = (() => {
 
   class PlayerController extends entity.Component {
+    static CLASS_NAME = 'PlayerController';
+
+    get NAME() {
+      return PlayerController.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.params_ = params;

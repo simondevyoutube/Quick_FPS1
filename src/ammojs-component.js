@@ -181,6 +181,12 @@ export const ammojs_component = (() => {
   }
 
   class AmmoJSController extends entity.Component {
+    static CLASS_NAME = 'AmmoJSController';
+
+    get NAME() {
+      return AmmoJSController.CLASS_NAME;
+    }
+
     constructor() {
       super();
     }

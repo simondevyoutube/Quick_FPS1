@@ -73,6 +73,12 @@ export const threejs_component = (() => {
 
 
   class ThreeJSController extends entity.Component {
+    static CLASS_NAME = 'ThreeJSController';
+
+    get NAME() {
+      return ThreeJSController.CLASS_NAME;
+    }
+
     constructor() {
       super();
     }
@@ -249,22 +255,22 @@ export const threejs_component = (() => {
     LoadBackground_() {
       const loader = new THREE.CubeTextureLoader();
       const texture = loader.load([
-          './resources/sky/Cold_Sunset__Cam_2_Left+X.png',
-          './resources/sky/Cold_Sunset__Cam_3_Right-X.png',
-          './resources/sky/Cold_Sunset__Cam_4_Up+Y.png',
-          './resources/sky/Cold_Sunset__Cam_5_Down-Y.png',
-          './resources/sky/Cold_Sunset__Cam_0_Front+Z.png',
-          './resources/sky/Cold_Sunset__Cam_1_Back-Z.png',
+          'resources/sky/Cold_Sunset__Cam_2_Left+X.png',
+          'resources/sky/Cold_Sunset__Cam_3_Right-X.png',
+          'resources/sky/Cold_Sunset__Cam_4_Up+Y.png',
+          'resources/sky/Cold_Sunset__Cam_5_Down-Y.png',
+          'resources/sky/Cold_Sunset__Cam_0_Front+Z.png',
+          'resources/sky/Cold_Sunset__Cam_1_Back-Z.png',
       ]);
       texture.encoding = THREE.sRGBEncoding;
 
       const starTexture = loader.load([
-          './resources/sky/space-posx.jpg',
-          './resources/sky/space-negx.jpg',
-          './resources/sky/space-posy.jpg',
-          './resources/sky/space-negy.jpg',
-          './resources/sky/space-posz.jpg',
-          './resources/sky/space-negz.jpg',
+          'resources/sky/space-posx.jpg',
+          'resources/sky/space-negx.jpg',
+          'resources/sky/space-posy.jpg',
+          'resources/sky/space-negy.jpg',
+          'resources/sky/space-posz.jpg',
+          'resources/sky/space-negz.jpg',
       ]);
       starTexture.encoding = THREE.sRGBEncoding;
   

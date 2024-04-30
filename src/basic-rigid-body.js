@@ -6,6 +6,12 @@ import {entity} from './entity.js';
 export const basic_rigid_body = (() => {
 
   class BasicRigidBody extends entity.Component {
+    static CLASS_NAME = 'BasicRigidBody';
+
+    get NAME() {
+      return BasicRigidBody.CLASS_NAME;
+    }
+
     constructor(params) {
       super();
       this.params_ = params;
