@@ -1,0 +1,12 @@
+# Blender MTL File: 'Cable_Small.blend'
+# Material Count: 1
+
+newmtl Black
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.027209 0.027209 0.027209
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
