@@ -73,7 +73,7 @@ export const level_1_builder = (() => {
         varying vec3 vWorldNormal;
         uniform float iTime;
 
-vec3 hash( vec3 p ) // replace this by something better. really. do
+vec3 hash3( vec3 p ) // replace this by something better. really. do
 {
   p = vec3( dot(p,vec3(127.1,311.7, 74.7)),
         dot(p,vec3(269.5,183.3,246.1)),
@@ -82,47 +82,21 @@ vec3 hash( vec3 p ) // replace this by something better. really. do
   return -1.0 + 2.0*fract(sin(p)*43758.5453123);
 }
 
-// return value noise (in x) and its derivatives (in yzw)
-vec4 noised( in vec3 x )
+float noise( in vec3 p )
 {
-    // grid
-    vec3 i = floor(x);
-    vec3 w = fract(x);
-    
-    #if 1
-    // quintic interpolant
-    vec3 u = w*w*w*(w*(w*6.0-15.0)+10.0);
-    vec3 du = 30.0*w*w*(w*(w-2.0)+1.0);
-    #else
-    // cubic interpolant
-    vec3 u = w*w*(3.0-2.0*w);
-    vec3 du = 6.0*w*(1.0-w);
-    #endif    
-    
-    // gradients
-    vec3 ga = hash( i+vec3(0.0,0.0,0.0) );
-    vec3 gb = hash( i+vec3(1.0,0.0,0.0) );
-    vec3 gc = hash( i+vec3(0.0,1.0,0.0) );
-    vec3 gd = hash( i+vec3(1.0,1.0,0.0) );
-    vec3 ge = hash( i+vec3(0.0,0.0,1.0) );
-  vec3 gf = hash( i+vec3(1.0,0.0,1.0) );
-    vec3 gg = hash( i+vec3(0.0,1.0,1.0) );
-    vec3 gh = hash( i+vec3(1.0,1.0,1.0) );
-    
-    // projections
-    float va = dot( ga, w-vec3(0.0,0.0,0.0) );
-    float vb = dot( gb, w-vec3(1.0,0.0,0.0) );
-    float vc = dot( gc, w-vec3(0.0,1.0,0.0) );
-    float vd = dot( gd, w-vec3(1.0,1.0,0.0) );
-    float ve = dot( ge, w-vec3(0.0,0.0,1.0) );
-    float vf = dot( gf, w-vec3(1.0,0.0,1.0) );
-    float vg = dot( gg, w-vec3(0.0,1.0,1.0) );
-    float vh = dot( gh, w-vec3(1.0,1.0,1.0) );
-  
-    // interpolations
-    return vec4( va + u.x*(vb-va) + u.y*(vc-va) + u.z*(ve-va) + u.x*u.y*(va-vb-vc+vd) + u.y*u.z*(va-vc-ve+vg) + u.z*u.x*(va-vb-ve+vf) + (-va+vb+vc-vd+ve-vf-vg+vh)*u.x*u.y*u.z,    // value
-                  ga + u.x*(gb-ga) + u.y*(gc-ga) + u.z*(ge-ga) + u.x*u.y*(ga-gb-gc+gd) + u.y*u.z*(ga-gc-ge+gg) + u.z*u.x*(ga-gb-ge+gf) + (-ga+gb+gc-gd+ge-gf-gg+gh)*u.x*u.y*u.z +   // derivatives
-                  du * (vec3(vb,vc,ve) - va + u.yzx*vec3(va-vb-vc+vd,va-vc-ve+vg,va-vb-ve+vf) + u.zxy*vec3(va-vb-ve+vf,va-vb-vc+vd,va-vc-ve+vg) + u.yzx*u.zxy*(-va+vb+vc-vd+ve-vf-vg+vh) ));
+    vec3 i = floor( p );
+    vec3 f = fract( p );
+	
+	vec3 u = f*f*(3.0-2.0*f);
+
+    return mix( mix( mix( dot( hash3( i + vec3(0.0,0.0,0.0) ), f - vec3(0.0,0.0,0.0) ), 
+                          dot( hash3( i + vec3(1.0,0.0,0.0) ), f - vec3(1.0,0.0,0.0) ), u.x),
+                     mix( dot( hash3( i + vec3(0.0,1.0,0.0) ), f - vec3(0.0,1.0,0.0) ), 
+                          dot( hash3( i + vec3(1.0,1.0,0.0) ), f - vec3(1.0,1.0,0.0) ), u.x), u.y),
+                mix( mix( dot( hash3( i + vec3(0.0,0.0,1.0) ), f - vec3(0.0,0.0,1.0) ), 
+                          dot( hash3( i + vec3(1.0,0.0,1.0) ), f - vec3(1.0,0.0,1.0) ), u.x),
+                     mix( dot( hash3( i + vec3(0.0,1.0,1.0) ), f - vec3(0.0,1.0,1.0) ), 
+                          dot( hash3( i + vec3(1.0,1.0,1.0) ), f - vec3(1.0,1.0,1.0) ), u.x), u.y), u.z );
 }
 
 float sdCircle( vec3 p, float r )
@@ -133,39 +107,6 @@ float sdCircle( vec3 p, float r )
 float smin(float a, float b, float k) {
   float h = clamp(0.5 + 0.5*(a-b)/k, 0.0, 1.0);
   return mix(a, b, h) - k*h*(1.0-h);
-}
-
-const mat3 m3  = mat3( 0.00,  0.80,  0.60,
-  -0.80,  0.36, -0.48,
-  -0.60, -0.48,  0.64 );
-const mat3 m3i = mat3( 0.00, -0.80, -0.60,
-   0.80,  0.36, -0.48,
-   0.60, -0.48,  0.64 );
-const mat2 m2 = mat2(  0.80,  0.60,
-  -0.60,  0.80 );
-const mat2 m2i = mat2( 0.80, -0.60,
-   0.60,  0.80 );
-
-vec4 fbmd_7( in vec3 x )
-{
-    float f = 1.92;
-    float s = 0.5;
-    float a = 0.0;
-    float b = 0.5;
-    vec3  d = vec3(0.0);
-    mat3  m = mat3(1.0,0.0,0.0,
-                   0.0,1.0,0.0,
-                   0.0,0.0,1.0);
-    for( int i=0; i<3; i++ )
-    {
-        vec4 n = noised(x);
-        a += b*n.x;          // accumulate values		
-        d += b*m*n.yzw;      // accumulate derivatives
-        b *= s;
-        x = f*m3*x;
-        m = f*m3i*m;
-    }
-	return vec4( a, d );
 }
 
 vec3 pal( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )
@@ -186,25 +127,6 @@ vec3 pal( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )
           vec3 weights = abs(vWorldNormal.xyz);
           weights /= dot(weights, vec3(1.0));
 
-          // vec2 coords1 = vWorldPosition.xy / size;
-          // vec2 coords2 = vWorldPosition.xz / size;
-          // vec2 coords3 = vWorldPosition.yz / size;
-          // vec3 diffuseColor1 = mapTexelToLinear(texture(map, coords1)).xyz;
-          // vec3 diffuseColor2 = mapTexelToLinear(texture(map, coords2)).xyz;
-          // vec3 diffuseColor3 = mapTexelToLinear(texture(map, coords3)).xyz;
-
-          // diffuseColor.xyz = diffuseColor1 * weights.z + diffuseColor2 * weights.y + diffuseColor3 * weights.x;
-
-          // {
-          //   vec3 mapN1 = texture(normalMap, coords1).xyz * 2.0 - 1.0;
-          //   vec3 mapN2 = texture(normalMap, coords2).xyz * 2.0 - 1.0;
-          //   vec3 mapN3 = texture(normalMap, coords3).xyz * 2.0 - 1.0;
-          //   vec3 mapN = normalize(mapN1 * weights.z + mapN2 * weights.y + mapN3 * weights.x);
-  
-          //   normal = normalize( vNormal );
-          //   normal = perturbNormal2Arb( -vViewPosition, normal, mapN, faceDirection );
-          // }
-
           float maxWeight = max(weights.x, max(weights.y, weights.z));
 
           vec2 coords;
@@ -216,30 +138,28 @@ vec3 pal( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )
             coords = vWorldPosition.yz / size;
           }
 
-          diffuseColor.xyz = mapTexelToLinear(texture(map, coords)).xyz;
-          // metalnessFactor = texture(metalnessMap, coords).x;
-          // roughnessFactor = texture(roughnessMap, coords).x;
+          diffuseColor.xyz = texture(map, coords).xyz;
 
-          // {
-          //   vec3 mapN = texture2D( normalMap, coords ).xyz * 2.0 - 1.0;
-          //   normal = normalize( vNormal );
-          //   normal = perturbNormal2Arb( -vViewPosition, normal, mapN, faceDirection );
-          //   // oop
-          // }
-          // diffuseColor.xyz = colXY * weights.z + colXZ * weights.y + colYZ * weights.x;
-          // diffuseColor.xyz = vec3(1.0);
+          // metalnessFactor = 0.1 * (1.0 - diffuseColor.x);
+          // roughnessFactor = diffuseColor.x * 0.5;
 
-          metalnessFactor = 0.1 * (1.0 - diffuseColor.x);
-          roughnessFactor = diffuseColor.x * 0.5;
+          // vec3 flooredPos = floor(vWorldPosition.xyz / size);
 
-          vec4 t = noised(floor(vWorldPosition.xyz / size) * 23.926325 + vec3(0.2));
-          vec3 c1 = pal( t.x, vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,1.0,1.0),vec3(0.0,0.33,0.67) );
+          // Hack, Nvidia cards seem to have a problem with the world position code above.
+          // No idea why.
+          ivec2 iflooredPos2 = ivec2(
+            int(floor(coords.x / size)),
+            int(floor(coords.y / size)));
+          vec3 flooredPos2 = vec3(float(iflooredPos2.x), float(iflooredPos2.y), float(iflooredPos2.x));
 
-          diffuseColor.xyz *= mix(0.25, 0.5, t.x);
+          float t = noise(flooredPos2 * 23.926325 + vec3(0.2));
+          vec3 c1 = pal( t, vec3(0.5,0.5,0.5),vec3(0.5,0.5,0.5),vec3(1.0,1.0,1.0),vec3(0.0,0.33,0.67) );
 
-          t = noised(floor(vWorldPosition.xyz / size) * 37.8953326 + vec3(0.05 * iTime));
-          totalEmissiveRadiance += smoothstep(0.3, 0.31, t.x) * c1 * 0.25;
-          diffuseColor.a = smoothstep(50.0, 0.0, fogDepth) * smoothstep(0.3, 0.31, t.x) * 0.5;
+          diffuseColor.xyz *= mix(0.25, 0.5, t);
+
+          t = noise(flooredPos2 * 37.8953326 + vec3(0.05 * iTime));
+          totalEmissiveRadiance += smoothstep(0.3, 0.31, t) * c1 * 0.25;
+          diffuseColor.a = smoothstep(50.0, 0.0, fogDepth) * smoothstep(0.3, 0.31, t) * 0.5;
 
         `);
         material.userData.shader = shader;
